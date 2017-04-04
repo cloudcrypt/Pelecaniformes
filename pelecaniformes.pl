@@ -110,4 +110,4 @@ commonName(ajaja,roseateSpoonbill).
 %hasCommonName(N,C) :- (order(N);family(N);genus(N)), commonName(N,C).
 %hasCommonName(N,C) :- commonName(X,C), hasParent(Y,X), hasCompoundName(Y,X,N).
 
-hasCompoundName(G,S,N) :- hasParent(S,G), atom_concat('_',S,N), atom_concat(G,N).
+hasCompoundName(G,S,N) :- hasParent(S,G), atom_concat('_',S,Z), atom_concat(G,Z,N).
