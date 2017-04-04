@@ -75,38 +75,39 @@ hasParent(chihi,plegadis).
 hasParent(ajaja,platalea). 
 
 commonName(pelecanus,pelican).
-	commonName(erythrorhynchos,americanWhitePelican).
-	commonName(occidentalis,brownPelican).
-
 commonName(botaurus,bittern).
-	commonName(lentiginosus,americanBittern).
 commonName(ixobrychus,bittern).
-	commonName(exilis,leastBittern).
 commonName(ardea,heron).
-	commonName(herodias,greatBlueHeron).
-	commonName(alba,greatEgret).
 commonName(egretta,heron).
 commonName(egretta,egret).
-	commonName(thula,snowyEgret).
-	commonName(caerulea,littleBlueHeron).
-	commonName(tricolor,tricoloredHeron).
-	commonName(rufescens,reddishEgret).
 commonName(bubulcus,egret).
-	commonName(ibis,cattleEgret).
 commonName(butorides,heron).
-	commonName(virescens,greenHeron).
 commonName(nycticorax,nightHeron).
-	commonName(nycticorax,blackCrownedNightHeron).
 commonName(nyctanassa,nightHeron).
-	commonName(violacea,yellowCrownedNightHeron).
-
 commonName(eudocimus,ibis).
-	commonName(albus,whiteIbis).
 commonName(plegadis,ibis).
-	commonName(falcinellus,glossyIbis).
-	commonName(chihi,whiteFacedIbis).
 commonName(platalea,spoonbill).
+
+commonName(erythrorhynchos,americanWhitePelican).
+commonName(occidentalis,brownPelican).
+commonName(lentiginosus,americanBittern).
+commonName(exilis,leastBittern).
+commonName(herodias,greatBlueHeron).
+commonName(alba,greatEgret).
+commonName(thula,snowyEgret).
+commonName(caerulea,littleBlueHeron).
+commonName(tricolor,tricoloredHeron).
+commonName(rufescens,reddishEgret).
+commonName(ibis,cattleEgret).
+commonName(virescens,greenHeron).
+commonName(nycticorax,blackCrownedNightHeron).
+commonName(violacea,yellowCrownedNightHeron).
+commonName(albus,whiteIbis).
+commonName(falcinellus,glossyIbis).
+commonName(chihi,whiteFacedIbis).
 commonName(ajaja,roseateSpoonbill).
 
-hasCommonName(N,C) :- (order(N);family(N);genus(N)), commonName(N,C).
-hasCommonName(N,C) :- commonName(X,C), hasParent(Y,X), atom_concat('_',X,Z), atom_concat(Y,Z).
+%hasCommonName(N,C) :- (order(N);family(N);genus(N)), commonName(N,C).
+%hasCommonName(N,C) :- commonName(X,C), hasParent(Y,X), hasCompoundName(Y,X,N).
+
+hasCompoundName(G,S,N) :- hasParent(S,G), atom_concat('_',S,N), atom_concat(G,N).
