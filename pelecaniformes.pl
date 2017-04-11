@@ -74,26 +74,9 @@ hasParent(falcinellus,plegadis).
 hasParent(chihi,plegadis).
 hasParent(ajaja,platalea). 
 
-hasParentC(pelecanus,pelecanus_erythrorhynchos).
-hasParentC(pelecanus,pelecanus_occidentalis).
-hasParentC(botaurus,botaurus_lentiginosus).
-hasParentC(ixobrychus,ixobrychus_exilis).
-hasParentC(ardea,ardea_herodias).
-hasParentC(ardea,ardea_alba).
-hasParentC(egretta,egretta_thula).
-hasParentC(egretta,egretta_caerulea).
-hasParentC(egretta,egretta_tricolor).
-hasParentC(egretta,egretta_rufescens).
-hasParentC(bubulcus,bubulcus_ibis).
-hasParentC(butorides,butorides_virescens).
-hasParentC(nycticorax,nycticorax_nycticorax).
-hasParentC(nyctanassa,nyctanassa_violacea).
-hasParentC(eudocimus,eudocimus_albus).
-hasParentC(plegadis,plegadis_falcinellus).
-hasParentC(plegadis,plegadis_chihi).
-hasParentC(platalea,platalea_ajaja).
-
-hasParent2(A,B) :- (hasCompoundName(G,S,A) -> hasParentC(B,A)) ; hasParent(A,B).
+hasParent2(A,B) :- hasCompoundName(G,S,A) -> genus(B), hasParent(S,B).
+hasParent2(A,B) :- genus(A) -> family(B), hasParent(A,B).
+hasParent2(A,B) :- family(A) -> order(B), hasParent(A,B).
 
 commonName(pelecanus,pelican).
 commonName(botaurus,bittern).
@@ -128,10 +111,13 @@ commonName(falcinellus,glossyIbis).
 commonName(chihi,whiteFacedIbis).
 commonName(ajaja,roseateSpoonbill).
 
-%hasCommonName(N,C) :- (order(N);family(N);genus(N)), commonName(N,C).
-%hasCommonName(N,C) :- commonName(X,C), hasParent(Y,X), hasCompoundName(Y,X,N).
+hasCommonName(N,C) :- (order(N);family(N);genus(N)),commonName(N,C).
+hasCommonName(N,C) :- hasCompoundName(G,S,N) -> commonName(S,C).
 
-hasSciName(C,N) :- (hasCompoundName(X, Y, N) -> commonName(Y,C) ); commonName(N,C).
+hasCommonName(G,S,C) :- hasCompoundName(G,S,N), commonName(S,C).
+
+hasSciName(C,N) :- hasCompoundName(X, Y, N) , commonName(Y,C). 
+hasSciName(C,N) :- genus(N), commonName(N,C).
 
 hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',S,Z), atom_concat(G,Z,N).
 
