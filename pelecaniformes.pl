@@ -135,7 +135,39 @@ countSpecies(A, 0).
 %countSpecies(A, N) :- aggregate_all(N, species(A),Count).
 
 %rangesTo
-rangesTo(pelecanus_erythrorhynchos,alberta).
+%habitat
+rangesTo(A,B) :- atom(A) -> ranges(A,B); 
+			 var(A) -> hasCompoundName(_,_,A), ranges(A,B).
+			 
+ranges(pelecanus_erythrorhynchos,alberta).
+ranges(pelecanus_erythrorhynchos,canada).
+ranges(botaurus_lentiginosus,alberta).
+ranges(botaurus_lentiginosus,canada).
+ranges(ardea_alba,canada).
+ranges(ardea_herodias,alberta).
+ranges(ardea_herodias,canada).
+ranges(bubulcus_ibis,canada).
+ranges(butorides_virescens,canada).
+ranges(nycticorax_nycticorax,alberta).
+ranges(nycticorax_nycticorax,canada).
+
+ranges(pelecanus,alberta).
+ranges(pelecanus,canada).
+ranges(botaurus,alberta).
+ranges(botaurus,canada).
+ranges(ardea,alberta).
+ranges(ardea,canada).
+ranges(nycticorax,alberta).
+ranges(nycticorax,canada).
+
+ranges(pelecanidae,alberta).
+ranges(pelecanidae,canada).
+ranges(ardeiadae,alberta).
+ranges(ardeiadae,canada).
+
+ranges(pelecaniformes,alberta).
+ranges(pelecaniformes,canada).
+ranges2(X,canada).
 
 %habitat
 habitat(A,B) :- atom(A) -> habitats(A,B); 
