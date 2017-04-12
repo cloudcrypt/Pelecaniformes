@@ -128,7 +128,7 @@ hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',
 %synonym(A, B) :-
 
 
-countSpecies(A, 0) :-
+countSpecies(A, 0).
 
 %countSpecies(A, 1) :- hasCompundName(G,S,A).
 %countSpecies(A, N) :- genus(A) -> 
