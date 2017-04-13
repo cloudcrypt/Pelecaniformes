@@ -92,52 +92,60 @@ commonName(eudocimus,ibis).
 commonName(plegadis,ibis).
 commonName(platalea,spoonbill).
 
-commonName(erythrorhynchos,americanWhitePelican).
-commonName(occidentalis,brownPelican).
-commonName(lentiginosus,americanBittern).
-commonName(exilis,leastBittern).
-commonName(herodias,greatBlueHeron).
-commonName(alba,greatEgret).
-commonName(thula,snowyEgret).
-commonName(caerulea,littleBlueHeron).
-commonName(tricolor,tricoloredHeron).
-commonName(rufescens,reddishEgret).
-commonName(ibis,cattleEgret).
-commonName(virescens,greenHeron).
-commonName(nycticorax,blackCrownedNightHeron).
-commonName(violacea,yellowCrownedNightHeron).
-commonName(albus,whiteIbis).
-commonName(falcinellus,glossyIbis).
-commonName(chihi,whiteFacedIbis).
-commonName(ajaja,roseateSpoonbill).
+commonName(pelecanus_erythrorhynchos,americanWhitePelican).
+commonName(pelecanus_occidentalis,brownPelican).
+commonName(botaurus_lentiginosus,americanBittern).
+commonName(ixobrychus_exilis,leastBittern).
+commonName(ardea_herodias,greatBlueHeron).
+commonName(ardea_alba,greatEgret).
+commonName(egretta_thula,snowyEgret).
+commonName(egretta_caerulea,littleBlueHeron).
+commonName(egretta_tricolor,tricoloredHeron).
+commonName(egretta_rufescens,reddishEgret).
+commonName(bubulcus_ibis,cattleEgret).
+commonName(butorides_virescens,greenHeron).
+commonName(nycticorax_nycticorax,blackCrownedNightHeron).
+commonName(nyctanassa_violacea,yellowCrownedNightHeron).
+commonName(eudocimus_albus,whiteIbis).
+commonName(plegadis_falcinellus,glossyIbis).
+commonName(plegadis_chihi,whiteFacedIbis).
+commonName(platalea_ajaja,roseateSpoonbill).
 
+%there is overlap when we do nycticorax nycticorax... change common names to have compound names?
+%the genus is ok but then actual name needs to be compound
 hasCommonName(N,C) :- (order(N);family(N);genus(N)),commonName(N,C).
-hasCommonName(N,C) :- hasCompoundName(G,S,N) -> commonName(S,C).
+hasCommonName(N,C) :- hasCompoundName(G,S,N) , commonName(N,C).
 
-hasCommonName(G,S,C) :- hasCompoundName(G,S,N), commonName(S,C).
+hasCommonName(G,S,C) :- hasCompoundName(G,S,N), commonName(N,C).
 
-hasSciName(C,N) :- hasCompoundName(X, Y, N) , commonName(Y,C). 
+hasSciName(C,N) :- hasCompoundName(X, Y, N) , commonName(N,C). 
 hasSciName(C,N) :- genus(N), commonName(N,C).
 
 hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',S,Z), atom_concat(G,Z,N).
 
-%isaStrict(A,B) :-
 
-%isa(A,B) :-
+isaStrict(A,B) :- hasCompoundName(G,S,A), hasCompoundName(G,S,B).
+isaStrict(A,B) :- hasParent2(A,B).
+isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,B).
+isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,Y), hasParent2(Y,B).
 
-%synonym(A, B) :-
+isa(A,B) :- isaStrict(A,B).
+isa(A,B) :- commonName(X,A), isaStrict(X,B).
+%isa(A,B) :- commonName(X,B), isaStrict(A,X).
+isa(A,B) :- commonName(X,B), commonName(Y,A), isaStrict(Y,X).
 
+synonym(A,B) :- (hasCommonName(A,B),A\=B). 
+synonym(A,B) :- (hasCommonName(B,A),A\=B).
+synonym(A,B) :- (hasCommonName(C,A),hasCommonName(C,B),A\=B).
 
-countSpecies(A, 0).
-
-%countSpecies(A, 1) :- hasCompundName(G,S,A).
-%countSpecies(A, N) :- genus(A) -> 
-%countSpecies(A, N) :- aggregate_all(N, species(A),Count).
+countSpecies(A,0) :- \+ (order(A) ; family(A);genus(A); hasCompoundName(G,S,A)).
+countSpecies(A,1) :- hasCompoundName(G,S,A).
+countSpecies(A,N) :- genus(A) -> findall(species(X), hasCompoundName(A,X,Y),List) , length(List, N).
+countSpecies(A,N) :- family(A) -> findall(species(X), (hasCompoundName(Z,X,Y),hasParent(Z,A)),List), length(List, N).
+countSpecies(A,N) :- order(A) -> findall(species(X), (hasCompoundName(Z,X,Y),hasParent(Z,D),hasParent(D,A)),List), length(List,N).
 
 %rangesTo
-%habitat
-rangesTo(A,B) :- atom(A) -> ranges(A,B); 
-			 var(A) -> hasCompoundName(_,_,A), ranges(A,B).
+rangesTo(A,B) :- (atom(A) , ranges(A,B)); (var(A) , hasCompoundName(_,_,A), ranges(A,B)).
 			 
 ranges(pelecanus_erythrorhynchos,alberta).
 ranges(pelecanus_erythrorhynchos,canada).
@@ -170,8 +178,7 @@ ranges(pelecaniformes,canada).
 ranges2(X,canada).
 
 %habitat
-habitat(A,B) :- atom(A) -> habitats(A,B); 
-			 var(A) -> hasCompoundName(_,_,A), habitats(A,B).
+habitat(A,B) :- (atom(A) , habitats(A,B)); (var(A) , hasCompoundName(_,_,A), habitats(A,B)).
 			 
 habitats(pelecanus_erythrorhynchos, lakePond).
 habitats(pelecanus_occidentalis, ocean).
@@ -216,8 +223,7 @@ habitats(pelecaniformes,ocean).
 habitats(pelecaniformes,marsh).
 
 %food
-food(A,B) :- atom(A) -> foods(A,B); 
-			 var(A) -> hasCompoundName(_,_,A), foods(A,B).
+food(A,B) :- (atom(A) , foods(A,B)); (var(A) , hasCompoundName(_,_,A), foods(A,B)).
 
 foods(pelecanus_erythrorhynchos,fish).
 foods(pelecanus_occidentalis,fish).
@@ -262,8 +268,7 @@ foods(pelecaniformes,fish).
 foods(pelecaniformes,insects).
 
 %nesting
-nesting(A,B) :- atom(A) -> nestings(A,B); 
-			 var(A) -> hasCompoundName(_,_,A), nestings(A,B).
+nesting(A,B) :- (atom(A) , nestings(A,B)); (var(A) , hasCompoundName(_,_,A), nestings(A,B)).
 
 nestings(pelecanus_erythrorhynchos,ground).
 nestings(pelecanus_occidentalis,tree).
@@ -308,8 +313,7 @@ nestings(pelecaniformes,ground).
 nestings(pelecaniformes,tree).
 
 %behavior
-behavior(A,B) :- atom(A) -> behaviors(A,B); 
-			 var(A) -> hasCompoundName(_,_,A), behaviors(A,B).
+behavior(A,B) :- (atom(A) , behaviors(A,B)); (var(A) , hasCompoundName(_,_,A), behaviors(A,B)).
 
 			 %surfaceDive, aerialDive, stalking, groundForager, probing
 behaviors(pelecanus_erythrorhynchos,surfaceDive).
@@ -357,8 +361,7 @@ behaviors(pelecaniformes,groundForager).
 behaviors(pelecaniformes,probing).
 
 %conservation
-conservation(A,B) :- atom(A) -> conservations(A,B); 
-			 var(A) -> hasCompoundName(_,_,A), conservations(A,B).
+conservation(A,B) :- (atom(A) , conservations(A,B)); (var(A) , hasCompoundName(_,_,A), conservations(A,B)).
 
 conservations(pelecanus_erythrorhynchos,lc).
 conservations(pelecanus_occidentalis,lc).
