@@ -119,7 +119,7 @@ hasCommonName(N,C) :- hasCompoundName(G,S,N) , commonName(N,C).
 hasCommonName(G,S,C) :- hasCompoundName(G,S,N), commonName(N,C).
 
 hasSciName(C,N) :- hasCompoundName(X, Y, N) , commonName(N,C). 
-hasSciName(C,N) :- genus(N), commonName(N,C).
+hasSciName(C,N) :- (order(N);family(N);genus(N)), commonName(N,C).
 
 hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',S,Z), atom_concat(G,Z,N).
 
