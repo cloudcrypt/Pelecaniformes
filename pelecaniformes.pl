@@ -125,15 +125,19 @@ hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',
 
 
 isaStrict(A,B) :- hasCompoundName(G,S,A), hasCompoundName(G,S,B).
+isaStrict(A,B) :- (order(A); family(A); genus(A)), (order(B); family(B); genus(B)), A = B.
 isaStrict(A,B) :- A == B, \+species(A), \+species(B), hasParent(X,B).
 isaStrict(A,B) :- hasParent2(A,B).
 isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,B).
 isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,Y), hasParent2(Y,B).
 
 isa(A,B) :- isaStrict(A,B).
-isa(A,B) :- commonName(X,A), isaStrict(X,B).
-%isa(A,B) :- commonName(X,B), isaStrict(A,X).
-isa(A,B) :- commonName(X,B), commonName(Y,A), isaStrict(Y,X).
+isa(A,B) :- (var(A), commonName(X,A), isaStrict(X,B)) -> A = X.
+isa(A,B) :- (var(B), commonName(X,B), isaStrict(A,X)) -> B = X.
+isa(A,B) :- (var(A), var(B), commonName(X,B), commonName(Y,A), isaStrict(Y,X)) -> (B = X, A = Y).
+isa(A,B) :- \+var(A), commonName(X,A), isaStrict(X,B).
+isa(A,B) :- \+var(B), commonName(X,B), isaStrict(A,X).
+isa(A,B) :- \+var(A), \+var(B), commonName(X,B), commonName(Y,A), isaStrict(Y,X).
 
 synonym(A,B) :- (hasCommonName(A,B),A\=B). 
 synonym(A,B) :- (hasCommonName(B,A),A\=B).
