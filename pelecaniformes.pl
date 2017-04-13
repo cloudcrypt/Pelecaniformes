@@ -74,9 +74,9 @@ hasParent(falcinellus,plegadis).
 hasParent(chihi,plegadis).
 hasParent(ajaja,platalea). 
 
-hasParent2(A,B) :- hasCompoundName(G,S,A) -> genus(B), hasParent(S,B).
-hasParent2(A,B) :- genus(A) -> family(B), hasParent(A,B).
-hasParent2(A,B) :- family(A) -> order(B), hasParent(A,B).
+hasParent2(A,B) :- hasCompoundName(G,S,A) , genus(B), hasParent(S,B).
+hasParent2(A,B) :- genus(A) , family(B), hasParent(A,B).
+hasParent2(A,B) :- family(A) , order(B), hasParent(A,B).
 
 commonName(pelecanus,pelican).
 commonName(botaurus,bittern).
@@ -125,6 +125,7 @@ hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',
 
 
 isaStrict(A,B) :- hasCompoundName(G,S,A), hasCompoundName(G,S,B).
+isaStrict(A,B) :- A == B, \+species(A), \+species(B), hasParent(X,B).
 isaStrict(A,B) :- hasParent2(A,B).
 isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,B).
 isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,Y), hasParent2(Y,B).
