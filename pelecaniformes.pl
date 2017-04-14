@@ -135,9 +135,11 @@ isa(A,B) :- isaStrict(A,B).
 isa(A,B) :- (var(A), commonName(X,A), isaStrict(X,B)) -> A = X.
 isa(A,B) :- (var(B), commonName(X,B), isaStrict(A,X)) -> B = X.
 isa(A,B) :- (var(A), var(B), commonName(X,B), commonName(Y,A), isaStrict(Y,X)) -> (B = X, A = Y).
-isa(A,B) :- \+var(A), commonName(X,A), isaStrict(X,B).
-isa(A,B) :- \+var(B), commonName(X,B), isaStrict(A,X).
+isa(A,B) :- var(A), commonName(X,B), isaStrict(A,X).
+isa(A,B) :- var(B), commonName(X,A), isaStrict(X,B).
+isa(A,B) :- \+var(A), \+var(B), (commonName(_,A); commonName(_,B)) -> ((commonName(X,A), isaStrict(X,B)); (commonName(X,B), isaStrict(A,X))).
 isa(A,B) :- \+var(A), \+var(B), commonName(X,B), commonName(Y,A), isaStrict(Y,X).
+
 
 synonym(A,B) :- (hasCommonName(A,B),A\=B). 
 synonym(A,B) :- (hasCommonName(B,A),A\=B).
