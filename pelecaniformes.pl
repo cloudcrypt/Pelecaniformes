@@ -1,4 +1,10 @@
-% Stating facts about the biological database
+% Authors: Carlin Liu, Daniel Dastoor, James Gilders, Teresa Van, Thomas Vu
+
+% The purpose of this program is to develop a simple biological database about the order Pelecaniformes
+% (Pelicans, Herons, Ibises, and allies) in North America, as well as inference rules about the higher-order
+% relationships among the terms and other details.
+
+% The order Pelecaniformes which is the focus of our biological database
 order(pelecaniformes).
 
 % Families within Pelecaniformes
