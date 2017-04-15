@@ -1,9 +1,12 @@
+% Stating facts about the biological database
 order(pelecaniformes).
 
+% Families within Pelecaniformes
 family(pelecanidae).
 family(ardeidae).
 family(threskiornithidae).
 
+% Genera within Pelecaniformes
 genus(pelecanus).
 genus(botaurus).
 genus(ixobrychus).
@@ -17,6 +20,7 @@ genus(eudocimus).
 genus(plegadis).
 genus(platalea).
 
+% Raw species names within Pelecaniformes
 species(erythrorhynchos).
 species(occidentalis).
 species(lentiginosus).
@@ -36,6 +40,7 @@ species(falcinellus).
 species(chihi).
 species(ajaja).
 
+% Stating facts about direct parents within Pelecaniformes
 hasParent(pelecanidae,pelecaniformes).
 hasParent(ardeidae,pelecaniformes).
 hasParent(threskiornithidae,pelecaniformes).
@@ -74,10 +79,14 @@ hasParent(falcinellus,plegadis).
 hasParent(chihi,plegadis).
 hasParent(ajaja,platalea). 
 
+% B is the direct parent of A
+% A must be a family, genus, or compound species name (no raw species names)
+% B must be an order, family, or genus name
 hasParent2(A,B) :- hasCompoundName(G,S,A) , genus(B), hasParent(S,B).
 hasParent2(A,B) :- genus(A) , family(B), hasParent(A,B).
 hasParent2(A,B) :- family(A) , order(B), hasParent(A,B).
 
+% Stating facts about common names within Pelecaniformes
 commonName(pelecanus,pelican).
 commonName(botaurus,bittern).
 commonName(ixobrychus,bittern).
@@ -111,19 +120,26 @@ commonName(plegadis_falcinellus,glossyIbis).
 commonName(plegadis_chihi,whiteFacedIbis).
 commonName(platalea_ajaja,roseateSpoonbill).
 
-%there is overlap when we do nycticorax nycticorax... change common names to have compound names?
-%the genus is ok but then actual name needs to be compound
+% N is a taxonomic name and C is the common version of that name
+% If N is a species name, it must be a compound name with the genus
 hasCommonName(N,C) :- (order(N);family(N);genus(N)),commonName(N,C).
 hasCommonName(N,C) :- hasCompoundName(G,S,N) , commonName(N,C).
 
+% The species with genus G and raw species name S has the common name C
 hasCommonName(G,S,C) :- hasCompoundName(G,S,N), commonName(N,C).
 
+% N is a taxonomic name and C is the common version of that name
+% If N is a species name, it must be a compound name with the genus
+% Essentially the reverse of hasCommonName/2
 hasSciName(C,N) :- hasCompoundName(X, Y, N) , commonName(N,C). 
 hasSciName(C,N) :- (order(N);family(N);genus(N)), commonName(N,C).
 
+% The species with genus G and raw species name S has the compound name N
 hasCompoundName(G,S,N) :- genus(G), species(S), hasParent(S,G), atom_concat('_',S,Z), atom_concat(G,Z,N).
 
-
+% B is an ancestor of A (not necessarily direct) (Note any tier counts as its own ancestor as well)
+% A and B may be order names, family names, genus names, compound species names, or variables
+% A and B may not be common names and this predicate will not return any common names
 isaStrict(A,B) :- hasCompoundName(G,S,A), hasCompoundName(G,S,B).
 isaStrict(A,B) :- (order(A); family(A); genus(A)), (order(B); family(B); genus(B)), A = B.
 isaStrict(A,B) :- A == B, \+species(A), \+species(B), hasParent(X,B).
@@ -131,6 +147,9 @@ isaStrict(A,B) :- hasParent2(A,B).
 isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,B).
 isaStrict(A,B) :- hasParent2(A,X), hasParent2(X,Y), hasParent2(Y,B).
 
+% B is an ancestor of A (not necessarily direct) (Note any tier counts as its own ancestor as well)
+% A and B may be order names, family names, genus names, compound species names, common names, or variables
+% A and B may be common names but this predicate will not return any common names
 isa(A,B) :- isaStrict(A,B).
 isa(A,B) :- (var(A), commonName(X,A), isaStrict(X,B)) -> A = X.
 isa(A,B) :- (var(B), commonName(X,B), isaStrict(A,X)) -> B = X.
@@ -140,20 +159,28 @@ isa(A,B) :- var(B), commonName(X,A), isaStrict(X,B).
 isa(A,B) :- \+var(A), \+var(B), (commonName(_,A); commonName(_,B)) -> ((commonName(X,A), isaStrict(X,B)); (commonName(X,B), isaStrict(A,X))).
 isa(A,B) :- \+var(A), \+var(B), commonName(X,B), commonName(Y,A), isaStrict(Y,X).
 
-
+% A and B may be an order name, a family name, a genus name, or a compound species name
+% If A is a common name, then B is the taxonomic name of A
+% If B is a common name, then A is the taxonomic name of B
+% A and B are not the same name
 synonym(A,B) :- (hasCommonName(A,B),A\=B). 
 synonym(A,B) :- (hasCommonName(B,A),A\=B).
 synonym(A,B) :- (hasCommonName(C,A),hasCommonName(C,B),A\=B).
 
+% A may be an order name, a family name, a genus name, or a compound species name
+% N is the number of species for which A is the ancestor
 countSpecies(A,0) :- \+ (order(A) ; family(A);genus(A); hasCompoundName(G,S,A)).
 countSpecies(A,1) :- hasCompoundName(G,S,A).
 countSpecies(A,N) :- genus(A) -> findall(species(X), hasCompoundName(A,X,Y),List) , length(List, N).
 countSpecies(A,N) :- family(A) -> findall(species(X), (hasCompoundName(Z,X,Y),hasParent(Z,A)),List), length(List, N).
 countSpecies(A,N) :- order(A) -> findall(species(X), (hasCompoundName(Z,X,Y),hasParent(Z,D),hasParent(D,A)),List), length(List,N).
 
-%rangesTo
+% A has a range that extends to P
+% A may be an order name, a family name, a genus name, or a compound species name
+% P may be either 'canada' or 'alberta'
 rangesTo(A,B) :- (atom(A) , ranges(A,B)); (var(A) , hasCompoundName(_,_,A), ranges(A,B)).
 			 
+% Stating facts about the ranges of the entities within Pelecaniformes
 ranges(pelecanus_erythrorhynchos,alberta).
 ranges(pelecanus_erythrorhynchos,canada).
 ranges(botaurus_lentiginosus,alberta).
@@ -182,11 +209,13 @@ ranges(ardeiadae,canada).
 
 ranges(pelecaniformes,alberta).
 ranges(pelecaniformes,canada).
-ranges2(X,canada).
 
-%habitat
+% A prefers a habitat of B
+% A may be an order name, a family name, a genus name, or a compound species name
+% B is either 'lakePond', 'ocean', or 'marsh' and may contain multiple values
 habitat(A,B) :- (atom(A) , habitats(A,B)); (var(A) , hasCompoundName(_,_,A), habitats(A,B)).
 			 
+% Stating facts about the various habitats of the entities within Pelecaniformes
 habitats(pelecanus_erythrorhynchos, lakePond).
 habitats(pelecanus_occidentalis, ocean).
 habitats(botaurus_lentiginosus,marsh).
@@ -229,9 +258,12 @@ habitats(pelecaniformes,lakePond).
 habitats(pelecaniformes,ocean).
 habitats(pelecaniformes,marsh).
 
-%food
+% A prefers to eat B
+% A may be an order name, a family name, a genus name, or a compound species name
+% B is either 'fish' or 'insects' and may contain multiple values
 food(A,B) :- (atom(A) , foods(A,B)); (var(A) , hasCompoundName(_,_,A), foods(A,B)).
 
+% Stating facts about the preferred meals of the entities within Pelecaniformes
 foods(pelecanus_erythrorhynchos,fish).
 foods(pelecanus_occidentalis,fish).
 foods(botaurus_lentiginosus,fish).
@@ -274,9 +306,12 @@ foods(threskiornithidae,fish).
 foods(pelecaniformes,fish).
 foods(pelecaniformes,insects).
 
-%nesting
+% A prefers to nest in B
+% A may be an order name, a family name, a genus name, or a compound species name
+% B is either 'ground' or 'tree' and may contain multiple values
 nesting(A,B) :- (atom(A) , nestings(A,B)); (var(A) , hasCompoundName(_,_,A), nestings(A,B)).
 
+% Stating facts about the preferred nests of the entities within Pelecaniformes
 nestings(pelecanus_erythrorhynchos,ground).
 nestings(pelecanus_occidentalis,tree).
 nestings(botaurus_lentiginosus,ground).
@@ -319,10 +354,12 @@ nestings(threskiornithidae,tree).
 nestings(pelecaniformes,ground).
 nestings(pelecaniformes,tree).
 
-%behavior
+% A exhibits feeding behavior B
+% A may be an order name, a family name, a genus name, or a compound species name
+% B is either 'surfaceDive', 'aerialDive', 'stalking', 'groundForager', 'probing' and may contain multiple values
 behavior(A,B) :- (atom(A) , behaviors(A,B)); (var(A) , hasCompoundName(_,_,A), behaviors(A,B)).
 
-			 %surfaceDive, aerialDive, stalking, groundForager, probing
+% Stating facts about the various feeding behaviors of the entities within Pelecaniformes
 behaviors(pelecanus_erythrorhynchos,surfaceDive).
 behaviors(pelecanus_occidentalis,aerialDive).
 behaviors(botaurus_lentiginosus,stalking).
@@ -367,9 +404,12 @@ behaviors(pelecaniformes,stalking).
 behaviors(pelecaniformes,groundForager).
 behaviors(pelecaniformes,probing).
 
-%conservation
+% A has a conservation status of B
+% A may be an order name, a family name, a genus name, or a compound species name
+% B is either 'lc' (low concern) or 'nt' (near threatened) and may contain multiple values
 conservation(A,B) :- (atom(A) , conservations(A,B)); (var(A) , hasCompoundName(_,_,A), conservations(A,B)).
 
+% Stating facts about the conservation status of the entities within Pelecaniformes
 conservations(pelecanus_erythrorhynchos,lc).
 conservations(pelecanus_occidentalis,lc).
 conservations(botaurus_lentiginosus,lc).
